@@ -7,7 +7,7 @@ import {
   Timer, X, ChevronDown, ShieldCheck, Eye, Flag, Trash2,
   MessageSquare, Menu, CheckSquare, Square, FileSpreadsheet,
   ArrowUpRight, HelpCircle, Send, Share2, HeartHandshake,
-  BookOpenCheck, UserCheck, ClipboardCheck,
+  BookOpenCheck, UserCheck, ClipboardCheck, Camera,
   ChevronRight, ChevronLeft, PartyPopper, MapPin, Megaphone,
   Check, CalendarDays, ShieldAlert, TrendingUp, TrendingDown, Settings as SettingsIcon, Bell, Home
 } from 'lucide-react';
@@ -604,6 +604,7 @@ export default function FacultyPortal({ account, onLogout }) {
 
   // Daily Attendance Session State
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+  const [openModelOnAttendanceModal, setOpenModelOnAttendanceModal] = useState(false);
   const [activeAttendanceTarget, setActiveAttendanceTarget] = useState(null);
   const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [attendancePeriod, setAttendancePeriod] = useState('Period 2 (10:00 - 11:00 AM)');
@@ -913,7 +914,7 @@ export default function FacultyPortal({ account, onLogout }) {
     });
   }, [scopedStudents, studentSearch, attendanceFilter, riskFilter, facultyAlertFilter]);
 
-  const handleOpenAttendanceModal = (targetAssignment) => {
+  const handleOpenAttendanceModal = (targetAssignment, openModel = false) => {
     if (targetAssignment?.id) {
       setSelectedAssignmentId(targetAssignment.id);
       setActiveAttendanceTarget(targetAssignment);
@@ -927,6 +928,7 @@ export default function FacultyPortal({ account, onLogout }) {
       initialMap[s.rollNumber] = true; // default present
     });
     setAttendanceMap(initialMap);
+    setOpenModelOnAttendanceModal(Boolean(openModel));
     setIsAttendanceModalOpen(true);
   };
 
@@ -1378,6 +1380,27 @@ export default function FacultyPortal({ account, onLogout }) {
                             title="Take attendance and record academic session details"
                           >
                             <ClipboardCheck size={14} /> Take Attendance
+                          </button>
+                          <button
+                            type="button"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '5px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
+                              background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                              color: '#ffffff',
+                              border: 'none',
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 4px rgba(2, 132, 199, 0.25)'
+                            }}
+                            onClick={() => handleOpenAttendanceModal(null, true)}
+                            title="Take attendance using Facenox AI Camera & Biometric Model"
+                          >
+                            <Camera size={14} /> 🤖 AI Model Attendance
                           </button>
                           <button
                             type="button"
@@ -3715,7 +3738,11 @@ export default function FacultyPortal({ account, onLogout }) {
         account={account}
         role="faculty"
         isModal={true}
-        onClose={() => setIsAttendanceModalOpen(false)}
+        initialOpenModel={openModelOnAttendanceModal}
+        onClose={() => {
+          setIsAttendanceModalOpen(false);
+          setOpenModelOnAttendanceModal(false);
+        }}
         initialAssignment={activeAttendanceTarget || currentAssignment}
         initialSubjectCode={activeAttendanceTarget?.subjectCode || currentAssignment?.subjectCode || 'CS501'}
         initialSubjectName={activeAttendanceTarget?.subjectName || currentAssignment?.subjectName || 'Data Structures & Algorithms'}

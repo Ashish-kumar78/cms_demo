@@ -6,6 +6,7 @@ import {
   BookOpen,
   Building2,
   Calendar,
+  Camera,
   Check,
   CheckCircle2,
   CheckSquare,
@@ -38,6 +39,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { facultyApi } from '../../services/facultyApi.js';
+import SmartFaceAttendanceModelModal from './SmartFaceAttendanceModelModal.jsx';
 import './TakeAttendanceModule.css';
 
 // Academic Activity Types Configuration (Exact requirements: Regular Class, Seminar, Internal Examination, Semester Examination, Other Academic Activity)
@@ -251,10 +253,22 @@ export default function TakeAttendanceModule({
   initialCourse = null,
   initialBatch = null,
   initialBranch = null,
+  initialOpenModel = false,
   onAttendanceSubmitted = null
 }) {
   // Navigation Tab State inside Module: 'register' | 'history'
   const [activeModuleTab, setActiveModuleTab] = useState('register');
+
+  // AI Face & Camera Attendance Model State
+  const [isFaceModelModalOpen, setIsFaceModelModalOpen] = useState(() => Boolean(initialOpenModel));
+  const [modelMetadata, setModelMetadata] = useState(null);
+
+  // Synchronize initialOpenModel if updated
+  useEffect(() => {
+    if (initialOpenModel) {
+      setIsFaceModelModalOpen(true);
+    }
+  }, [initialOpenModel]);
 
   // Academic Activity Type State
   const [activityType, setActivityType] = useState('Regular Class');
@@ -579,6 +593,15 @@ export default function TakeAttendanceModule({
     setShowConfirmModal(true);
   };
 
+  const handleApplyModelAttendance = (newAttendanceMap, auditDetails) => {
+    setAttendanceMap(newAttendanceMap);
+    setModelMetadata(auditDetails);
+    setAlertBanner({
+      type: 'success',
+      message: `✅ AI Model Attendance Applied: ${auditDetails.presentCount} Verified Present, ${auditDetails.lateCount} Late (${auditDetails.accuracyRate}% recognition accuracy). All biometric audit details recorded.`
+    });
+  };
+
   // Final Submission Confirmed
   const handleConfirmSubmit = async () => {
     setShowConfirmModal(false);
@@ -606,7 +629,8 @@ export default function TakeAttendanceModule({
       status: 'Finalized',
       attendanceMap: { ...attendanceMap },
       submittedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      facultyName: account?.name || 'Dr. S. Mohanty'
+      facultyName: account?.name || 'Dr. S. Mohanty',
+      modelMetadata: modelMetadata || null
     };
 
     setSubmittedSession(sessionRecord);
@@ -789,7 +813,7 @@ export default function TakeAttendanceModule({
         </div>
       </div>
 
-      {/* Top Module Navigation: Register vs Session History */}
+      {/* Top Module Navigation: Register vs Session History vs AI Camera Model */}
       <div className="attendance-module-tabs">
         <button
           type="button"
@@ -805,6 +829,25 @@ export default function TakeAttendanceModule({
         >
           <History size={16} /> Academic Activity &amp; Past Sessions
           <span className="module-tab-badge">{pastSessions.length}</span>
+        </button>
+        <button
+          type="button"
+          className="module-tab-btn"
+          style={{
+            background: 'linear-gradient(135deg, rgba(6,182,212,0.12), rgba(37,99,235,0.12))',
+            border: '1px solid #38bdf8',
+            color: '#0369a1',
+            fontWeight: 700
+          }}
+          onClick={() => setIsFaceModelModalOpen(true)}
+          title="Open Facenox AI Camera & Biometric Model for automatic attendance"
+        >
+          <Camera size={16} /> 🤖 AI Camera Model
+          {modelMetadata && (
+            <span className="module-tab-badge" style={{ background: '#10b981', color: '#ffffff' }}>
+              ✓ Verified
+            </span>
+          )}
         </button>
       </div>
 
@@ -921,6 +964,71 @@ export default function TakeAttendanceModule({
                   <strong>{submittedSession.topicsCovered || 'Regular Syllabus Lecture'}</strong>
                 </div>
               </div>
+
+              {/* AI Biometric Face Recognition Audit Badge */}
+              {submittedSession.modelMetadata && (
+                <div
+                  className="final-ai-model-audit-box"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(6,182,212,0.08), rgba(37,99,235,0.08))',
+                    border: '1px solid #bae6fd',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        background: '#0284c7',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Camera size={18} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0369a1' }}>
+                        🤖 {submittedSession.modelMetadata.modelName || 'Facenox AI Face Biometrics'}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                        Source: {submittedSession.modelMetadata.cameraSource || 'Classroom Smart CCTV HD'} · Token: <code style={{ fontSize: '0.75rem', color: '#0369a1' }}>{submittedSession.modelMetadata.auditToken}</code>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Recognition Accuracy</div>
+                      <strong style={{ fontSize: '1rem', color: '#059669' }}>{submittedSession.modelMetadata.accuracyRate}%</strong>
+                    </div>
+                    <span
+                      style={{
+                        background: '#dcfce7',
+                        color: '#15803d',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        padding: '4px 10px',
+                        borderRadius: '9999px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <CheckCircle2 size={13} /> Biometric Verified
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Statistics Progress Bar */}
               <div className="final-stats-bar">
@@ -1300,8 +1408,13 @@ export default function TakeAttendanceModule({
                     }`}>
                       {activityType}
                     </span>
+                    {modelMetadata && (
+                      <span className="badge-ai-model-verified" title={`Verified by ${modelMetadata.modelName} (${modelMetadata.accuracyRate}% confidence)`}>
+                        <Sparkles size={13} /> AI Model Verified ({modelMetadata.accuracyRate}%)
+                      </span>
+                    )}
                   </div>
-                  <p>Default status is ABSENT. Check student box to mark PRESENT (green tick).</p>
+                  <p>Default status is ABSENT. Check student box to mark PRESENT (green tick), or run AI Model.</p>
                 </div>
                 <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
                   {isSubmitted && !isEditing ? 'ReadOnly Attendance Record' : 'Live Interactive Draft'}
@@ -1328,6 +1441,14 @@ export default function TakeAttendanceModule({
                         title="Clear all checkboxes (mark all absent)"
                       >
                         <RotateCcw size={15} /> Clear All
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-ai-attendance-model"
+                        onClick={() => setIsFaceModelModalOpen(true)}
+                        title="Take attendance using Facenox AI Camera & Face Recognition Model"
+                      >
+                        <Camera size={16} /> 🤖 AI Model Attendance
                       </button>
                     </div>
 
@@ -1803,6 +1924,13 @@ export default function TakeAttendanceModule({
                   <strong style={{ fontSize: '1.4rem', color: '#b91c1c' }}>{absentCount}</strong>
                 </div>
               </div>
+
+              {modelMetadata && (
+                <div style={{ marginTop: '12px', padding: '8px 12px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', fontSize: '0.82rem', color: '#065f46', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={16} color="#059669" />
+                  <span><strong>AI Model Verification Attached:</strong> {modelMetadata.modelName} ({modelMetadata.accuracyRate}% confidence)</span>
+                </div>
+              )}
             </div>
 
             <div className="attendance-modal-footer">
@@ -1883,6 +2011,24 @@ export default function TakeAttendanceModule({
           </div>
         </div>
       )}
+
+      {/* ── 9. SMART FACE ATTENDANCE MODEL MODAL ── */}
+      <SmartFaceAttendanceModelModal
+        isOpen={isFaceModelModalOpen}
+        onClose={() => setIsFaceModelModalOpen(false)}
+        studentsList={studentsList}
+        subjectCode={subjectCode}
+        subjectName={subjectName}
+        course={course}
+        branch={branch}
+        section={section}
+        date={date}
+        fromTime={fromTime}
+        toTime={toTime}
+        onApplyAttendance={handleApplyModelAttendance}
+        userRole={role}
+        userName={account?.name || (role === 'hod' ? 'Head of Department' : 'Faculty')}
+      />
     </div>
   );
 

@@ -34,6 +34,7 @@ import {
   HelpCircle,
   ChevronRight,
   ClipboardCheck,
+  Camera,
   ShieldAlert,
   Megaphone,
   Check,
@@ -310,6 +311,7 @@ export default function HodPortal({ account, onLogout }) {
   const greeting = useTimeGreeting();
   const isDemo = isDemoAccount(account);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [openAttendanceModel, setOpenAttendanceModel] = useState(false);
   const [approvalQueue, setApprovalQueue] = useState(() => (isDemo ? initialApprovalQueue : []));
   const [students, setStudents] = useState(() => (isDemo ? getAllStudents() : []));
   const [faculty, setFaculty] = useState(() => (isDemo ? initialFaculty : []));
@@ -1208,7 +1210,11 @@ export default function HodPortal({ account, onLogout }) {
               <TakeAttendanceModule
                 account={account}
                 role="hod"
-                onBackToDashboard={() => setActiveTab('dashboard')}
+                initialOpenModel={openAttendanceModel}
+                onBackToDashboard={() => {
+                  setOpenAttendanceModel(false);
+                  setActiveTab('dashboard');
+                }}
               />
             </div>
           )}
@@ -2065,11 +2071,36 @@ export default function HodPortal({ account, onLogout }) {
                         Room: Block B - 310 · Section A (32 Students Enrolled) · Topic: Distributed Query Optimization
                       </div>
                     </div>
-                    <div style={{ paddingTop: '8px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ paddingTop: '8px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
                       <small style={{ color: '#2563eb', fontWeight: 600 }}>Commencing at 11:15 AM</small>
-                      <button className="admin-action-btn-primary" style={{ padding: '3px 8px', fontSize: '0.72rem' }} onClick={() => setActiveTab('take-attendance')}>
-                        <Calendar size={12} /> Mark Attendance
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <button className="admin-action-btn-primary" style={{ padding: '3px 8px', fontSize: '0.72rem' }} onClick={() => { setOpenAttendanceModel(false); setActiveTab('take-attendance'); }}>
+                          <Calendar size={12} /> Mark Attendance
+                        </button>
+                        <button
+                          type="button"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '3px 8px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            borderRadius: '6px',
+                            background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                            color: '#ffffff',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => {
+                            setOpenAttendanceModel(true);
+                            setActiveTab('take-attendance');
+                          }}
+                          title="Take attendance using Facenox AI Camera & Biometric Model"
+                        >
+                          <Camera size={12} /> 🤖 AI Model
+                        </button>
+                      </div>
                     </div>
                   </div>
 
