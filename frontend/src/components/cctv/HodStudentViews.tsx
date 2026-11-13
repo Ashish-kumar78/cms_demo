@@ -38,32 +38,42 @@ export function HodReportsPanel() {
   }, [loadReport])
 
   return (
-    <div className="flex flex-col gap-4 text-xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            placeholder="Department (e.g. CSE)"
-            className="rounded-lg border border-white/15 bg-[#151821] px-2.5 py-1.5 text-white"
-          />
-          <input
-            value={section}
-            onChange={(e) => setSection(e.target.value)}
-            placeholder="Section (e.g. A)"
-            className="rounded-lg border border-white/15 bg-[#151821] px-2.5 py-1.5 text-white"
-          />
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="rounded-lg border border-white/15 bg-[#151821] px-2.5 py-1.5 text-white"
-          />
+    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <div className="cctv-filter-panel">
+        <div className="cctv-filter-group">
+          <div>
+            <label className="cctv-input-label">Department</label>
+            <input
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              placeholder="e.g. CSE"
+              className="cctv-select-control"
+            />
+          </div>
+          <div>
+            <label className="cctv-input-label">Section</label>
+            <input
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              placeholder="e.g. A"
+              className="cctv-select-control"
+            />
+          </div>
+          <div>
+            <label className="cctv-input-label">Audit Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="cctv-date-control"
+            />
+          </div>
         </div>
         <button
           type="button"
           onClick={() => void loadReport()}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-white/85 hover:bg-white/10">
+          className="btn-take-footage-scan"
+          style={{ padding: "6px 14px", fontSize: "0.75rem" }}>
           <RefreshCw className="size-3.5" />
           Refresh Report
         </button>
@@ -71,73 +81,80 @@ export function HodReportsPanel() {
 
       {report && (
         <>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-6">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(6, 1fr)",
+              gap: "10px",
+              marginBottom: "14px",
+            }}>
             {[
-              { label: "Classes", val: report.totals.total_classes, color: "text-white" },
+              { label: "Classes", val: report.totals.total_classes, color: "#ffffff" },
               {
                 label: "CCTV Verified",
                 val: report.totals.cctv_verified,
-                color: "text-emerald-300",
+                color: "#34d399",
               },
               {
                 label: "Manual Verified",
                 val: report.totals.manually_verified,
-                color: "text-cyan-300",
+                color: "#38bdf8",
               },
               {
                 label: "Pending",
                 val: report.totals.pending_verification,
-                color: "text-amber-300",
+                color: "#fbbf24",
               },
               {
                 label: "Late / Partial",
                 val: report.totals.late_or_partial,
-                color: "text-orange-300",
+                color: "#fb923c",
               },
               {
                 label: "Mismatches",
                 val: report.totals.section_mismatch,
-                color: "text-rose-300",
+                color: "#f87171",
               },
             ].map((k) => (
               <div
                 key={k.label}
-                className="rounded-xl border border-white/10 bg-[#131620] p-2.5 text-center">
-                <div className={`text-lg font-bold ${k.color}`}>{k.val}</div>
-                <div className="text-[11px] text-white/55">{k.label}</div>
+                className="cctv-headcount-card"
+                style={{ padding: "10px" }}>
+                <div className="cctv-headcount-val" style={{ color: k.color }}>{k.val}</div>
+                <div className="cctv-headcount-label">{k.label}</div>
               </div>
             ))}
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#12141c]">
-            <table className="w-full text-left text-[11px]">
-              <thead className="border-b border-white/10 bg-white/[0.02] text-white/55">
+          <div className="cctv-table-wrapper">
+            <table className="cctv-roster-table">
+              <thead>
                 <tr>
-                  <th className="p-2.5">Section & Subject</th>
-                  <th className="p-2.5">Faculty</th>
-                  <th className="p-2.5">Enrolled</th>
-                  <th className="p-2.5">CCTV</th>
-                  <th className="p-2.5">Manual</th>
-                  <th className="p-2.5">Pending</th>
-                  <th className="p-2.5">Attendance %</th>
+                  <th>Section &amp; Subject</th>
+                  <th>Faculty</th>
+                  <th>Enrolled</th>
+                  <th>CCTV</th>
+                  <th>Manual</th>
+                  <th>Pending</th>
+                  <th>Attendance %</th>
                 </tr>
               </thead>
               <tbody>
                 {report.sections.length === 0 ?
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-white/45">
+                    <td colSpan={7} style={{ padding: "32px", textAlign: "center", color: "#94a3b8" }}>
                       No departmental class schedules matched this filter.
                     </td>
                   </tr>
                 : report.sections.map((s) => (
-                    <tr key={s.schedule_id} className="border-b border-white/5">
-                      <td className="p-2.5">
-                        <div className="font-semibold text-white">
+                    <tr key={s.schedule_id}>
+                      <td>
+                        <div style={{ fontWeight: 700, color: "#ffffff" }}>
                           {s.department} {s.semester}-{s.section} • {s.subject_code}
                         </div>
-                        <div className="text-white/50">{s.subject_name}</div>
+                        <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{s.subject_name}</div>
                       </td>
-                      <td className="p-2.5 text-white/75">{s.faculty_name}</td>
+                      <td style={{ color: "#cbd5e1" }}>{s.faculty_name}</td>
                       <td className="p-2.5">{s.enrolled}</td>
                       <td className="p-2.5 text-emerald-300">{s.cctv_verified}</td>
                       <td className="p-2.5 text-cyan-300">{s.manually_verified}</td>

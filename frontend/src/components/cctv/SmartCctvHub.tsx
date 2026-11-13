@@ -16,6 +16,7 @@ import { UnknownStudentsPanel } from "./UnknownStudentsPanel"
 import { AdminCctvDashboard } from "./AdminCctvDashboard"
 import { TimetableSectionsPanel } from "./TimetableSectionsPanel"
 import { HodReportsPanel, StudentPortalPanel } from "./HodStudentViews"
+import "./CctvHub.css"
 
 type UserRole = "faculty" | "admin" | "hod" | "student"
 
@@ -68,22 +69,24 @@ export function SmartCctvHub({
     <div
       role="dialog"
       aria-label="APNA CAMPUS Smart CCTV Attendance Hub"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm sm:p-5">
-      <div className="flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#0c0e14] text-white shadow-2xl">
+      className="cctv-hub-dialog-overlay"
+      onClick={onClose}>
+      <div className="cctv-hub-modal-window" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[#11141d] px-4 py-3">
+        <div className="cctv-hub-header">
           <div>
-            <h2 className="text-sm font-bold tracking-wide text-white">
+            <h2>
+              <Camera className="size-4 text-cyan-400" />
               APNA CAMPUS ERP • Smart CCTV Attendance & Recovery Hub
             </h2>
-            <p className="text-[11px] text-white/55">
+            <p>
               Centralized 10-Factor Biometric Verification, Camera Fault Recovery & Governance
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {/* Role Switcher */}
-            <div className="flex items-center rounded-lg border border-white/10 bg-black/40 p-0.5 text-[11px]">
+            <div className="cctv-role-switcher">
               {(["faculty", "admin", "hod", "student"] as UserRole[]).map((r) => (
                 <button
                   key={r}
@@ -92,11 +95,7 @@ export function SmartCctvHub({
                     setRole(r)
                     setActiveTab(ROLE_DEFAULT_TAB[r])
                   }}
-                  className={`rounded-md px-2.5 py-1 font-medium capitalize transition ${
-                    role === r ?
-                      "bg-cyan-500 text-black font-semibold"
-                    : "text-white/65 hover:text-white"
-                  }`}>
+                  className={`cctv-role-btn ${role === r ? "active" : ""}`}>
                   {r === "hod" ? "HOD" : r}
                 </button>
               ))}
@@ -106,14 +105,14 @@ export function SmartCctvHub({
               type="button"
               onClick={onClose}
               aria-label="Close Smart CCTV Hub"
-              className="rounded-lg border border-white/15 bg-white/5 p-1.5 text-white/70 hover:bg-white/15 hover:text-white">
+              className="cctv-hub-close-btn">
               <X className="size-4" />
             </button>
           </div>
         </div>
 
         {/* Sub-navigation */}
-        <div className="flex flex-wrap gap-1.5 border-b border-white/10 bg-[#0f1219] px-4 py-2">
+        <div className="cctv-nav-tabs-bar">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon
             const isSelected = currentTab === tab.id
@@ -122,11 +121,7 @@ export function SmartCctvHub({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                  isSelected ?
-                    "border border-cyan-500/40 bg-cyan-500/15 text-cyan-200"
-                  : "border border-transparent text-white/65 hover:bg-white/5 hover:text-white"
-                }`}>
+                className={`cctv-nav-tab ${isSelected ? "active" : ""}`}>
                 <Icon className="size-3.5" />
                 {tab.label}
               </button>
@@ -135,7 +130,7 @@ export function SmartCctvHub({
         </div>
 
         {/* Active Panel Content */}
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="cctv-hub-scroll-body">
           {currentTab === "faculty" && <FacultyDashboard onApplyAttendance={onApplyAttendance} />}
           {currentTab === "playback" && <FacultyPlaybackReview />}
           {currentTab === "unknowns" && <UnknownStudentsPanel />}
