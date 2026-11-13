@@ -39,7 +39,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { facultyApi } from '../../services/facultyApi.js';
-import SmartFaceAttendanceModelModal from './SmartFaceAttendanceModelModal.jsx';
+import { SmartCctvHub } from '../cctv/SmartCctvHub.tsx';
 import './TakeAttendanceModule.css';
 
 // Academic Activity Types Configuration (Exact requirements: Regular Class, Seminar, Internal Examination, Semester Examination, Other Academic Activity)
@@ -2012,22 +2012,16 @@ export default function TakeAttendanceModule({
         </div>
       )}
 
-      {/* ── 9. SMART FACE ATTENDANCE MODEL MODAL ── */}
-      <SmartFaceAttendanceModelModal
+      {/* ── 9. EXACT FACENOX SMART CCTV ATTENDANCE MODEL HUB FROM REPO ── */}
+      <SmartCctvHub
         isOpen={isFaceModelModalOpen}
         onClose={() => setIsFaceModelModalOpen(false)}
-        studentsList={studentsList}
-        subjectCode={subjectCode}
-        subjectName={subjectName}
-        course={course}
-        branch={branch}
-        section={section}
-        date={date}
-        fromTime={fromTime}
-        toTime={toTime}
-        onApplyAttendance={handleApplyModelAttendance}
-        userRole={role}
-        userName={account?.name || (role === 'hod' ? 'Head of Department' : 'Faculty')}
+        userRole={role === 'hod' ? 'hod' : 'faculty'}
+        initialTab={role === 'hod' ? 'hod' : 'faculty'}
+        onApplyAttendance={(newAttendanceMap, auditDetails) => {
+          handleApplyModelAttendance(newAttendanceMap, auditDetails);
+          setIsFaceModelModalOpen(false);
+        }}
       />
     </div>
   );

@@ -14,6 +14,7 @@ import {
 import CalendarWidget from './CalendarWidget.jsx';
 import HolidayListWidget from './HolidayListWidget.jsx';
 import TakeAttendanceModule from './Attendance/TakeAttendanceModule.jsx';
+import { SmartCctvHub } from './cctv/SmartCctvHub.tsx';
 import './FacultyPortal.css';
 import '../DashboardHome.css';
 import '../components/AdminPortal.css';
@@ -604,6 +605,7 @@ export default function FacultyPortal({ account, onLogout }) {
 
   // Daily Attendance Session State
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+  const [isSmartCctvHubOpen, setIsSmartCctvHubOpen] = useState(false);
   const [openModelOnAttendanceModal, setOpenModelOnAttendanceModal] = useState(false);
   const [activeAttendanceTarget, setActiveAttendanceTarget] = useState(null);
   const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -1022,6 +1024,7 @@ export default function FacultyPortal({ account, onLogout }) {
       title: 'TEACHING & CLASSES',
       items: [
         { id: 'take-attendance', label: 'Take Attendance', icon: ClipboardCheck },
+        { id: 'cctv-model-hub', label: 'AI CCTV Attendance Model', icon: Camera },
         { id: 'timetable', label: 'My Timetable', icon: Calendar },
         { id: 'subjects', label: 'My Subjects', icon: BookOpen },
         { id: 'students', label: `My Students (${scopedStudents.length || 150})`, icon: GraduationCap },
@@ -1282,6 +1285,24 @@ export default function FacultyPortal({ account, onLogout }) {
             </div>
           )}
 
+          {/* AI CCTV MODEL HUB TAB */}
+          {activeTab === 'cctv-model-hub' && (
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ background: '#0c0e14', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', minHeight: '680px' }}>
+                <SmartCctvHub
+                  isOpen={true}
+                  userRole="faculty"
+                  initialTab="faculty"
+                  onClose={() => setActiveTab('take-attendance')}
+                  onApplyAttendance={(attendanceMap, auditDetails) => {
+                    triggerToast(`✓ Biometric attendance applied: ${auditDetails.presentCount} present (${auditDetails.cameraSource})!`);
+                    setActiveTab('take-attendance');
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* CAMPUS CONNECT TAB */}
           {activeTab === 'campus-connect' && (
             <div style={{ marginBottom: '20px' }}>
@@ -1397,8 +1418,8 @@ export default function FacultyPortal({ account, onLogout }) {
                               cursor: 'pointer',
                               boxShadow: '0 2px 4px rgba(2, 132, 199, 0.25)'
                             }}
-                            onClick={() => handleOpenAttendanceModal(null, true)}
-                            title="Take attendance using Facenox AI Camera & Biometric Model"
+                            onClick={() => setIsSmartCctvHubOpen(true)}
+                            title="Take attendance using Facenox AI Smart CCTV & Face Biometrics Hub"
                           >
                             <Camera size={14} /> 🤖 AI Model Attendance
                           </button>
@@ -3756,6 +3777,18 @@ export default function FacultyPortal({ account, onLogout }) {
         }}
       />
     )}
+
+    {/* EXACT FACENOX SMART CCTV ATTENDANCE MODEL HUB FROM REPO */}
+    <SmartCctvHub
+      isOpen={isSmartCctvHubOpen}
+      onClose={() => setIsSmartCctvHubOpen(false)}
+      userRole="faculty"
+      initialTab="faculty"
+      onApplyAttendance={(attendanceMap, auditDetails) => {
+        triggerToast(`✓ Biometric attendance applied: ${auditDetails.presentCount} present (${auditDetails.cameraSource})!`);
+        setIsSmartCctvHubOpen(false);
+      }}
+    />
 
     {/* MODAL 1: SUBJECT DETAILS MODAL (6 TABS) */}
     {selectedSubjectModal && (

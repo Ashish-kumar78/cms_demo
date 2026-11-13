@@ -1,0 +1,323 @@
+export interface FaceRecognitionRequest {
+  image: string
+  bbox: number[]
+  group_id: string
+  landmarks_5: number[][]
+  enable_liveness_detection: boolean
+}
+
+export interface FaceRecognitionResponse {
+  success: boolean
+  person_id: string | null
+  name?: string
+  similarity: number
+  processing_time: number
+  error: string | null
+}
+
+export interface FaceEnrollmentRequest {
+  image: string
+  person_id: string
+  bbox: number[]
+  group_id: string
+  landmarks_5: number[][]
+  enable_liveness_detection: boolean
+}
+
+export interface FaceEnrollmentResponse {
+  success: boolean
+  person_id: string
+  total_persons: number
+  processing_time: number
+  error: string | null
+}
+
+export interface PersonRemovalRequest {
+  person_id: string
+}
+
+export interface PersonRemovalResponse {
+  success: boolean
+  person_id?: string
+  message: string
+  total_persons?: number
+  error?: string
+}
+
+export interface SimilarityThresholdRequest {
+  threshold: number
+}
+
+export interface SimilarityThresholdResponse {
+  success: boolean
+  message: string
+  threshold: number
+  error?: string
+}
+
+export interface PersonInfo {
+  person_id: string
+  embedding_count: number
+  last_seen?: string
+}
+
+export interface DatabaseStatsResponse {
+  total_persons: number
+  persons: PersonInfo[]
+}
+
+export interface PersonUpdateResponse {
+  success: boolean
+  message: string
+  updated_records: number
+}
+
+export interface PersonListResponse {
+  success: boolean
+  persons: {
+    person_id: string
+    embedding_count: number
+  }[]
+  total_count: number
+}
+
+export interface DatabaseClearResponse {
+  success: boolean
+  message: string
+  total_persons: number
+}
+
+export interface RecognitionResult {
+  person_id?: string
+  similarity?: number
+  is_recognized: boolean
+}
+
+export interface FaceWithRecognition {
+  bbox: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+  confidence: number
+  track_id?: number
+  liveness?: {
+    is_real: boolean | null
+    logit_diff?: number
+    real_logit?: number
+    spoof_logit?: number
+    confidence?: number
+    status:
+      "real" | "spoof" | "candidate_real" | "unknown" | "error" | "move_closer" | "center_face"
+    label?: string
+    attack_type?: string
+    message?: string
+  }
+  recognition?: RecognitionResult
+}
+
+export interface DetectionWithRecognitionResult {
+  faces: FaceWithRecognition[]
+  model_used: string
+}
+
+export type AttendanceStatus = "present" | "absent"
+export type AttendanceMode = "attendance" | "work_hours" | "visits"
+export type ScanBehavior = "automatic" | "entry_only" | "exit_only"
+
+export interface AttendanceGroup {
+  id: string
+  name: string
+  recognizer_model?: string
+  created_at: Date
+  is_active: boolean
+  settings: {
+    attendance_mode?: AttendanceMode
+    late_threshold_minutes?: number
+    late_threshold_enabled?: boolean
+    class_start_time?: string
+    class_end_time?: string | null
+    track_checkout?: boolean
+    min_checkout_delay_minutes?: number
+    scan_behavior?: ScanBehavior
+  }
+  remote_id?: string | null
+}
+
+export interface AttendanceMember {
+  id?: string
+  person_id: string
+  group_id: string
+  name: string
+  role?: string
+  email?: string
+  joined_at: Date
+  is_active: boolean
+  has_face_data?: boolean
+  remote_id?: string | null
+}
+
+export interface AttendanceRecord {
+  id: string
+  person_id: string
+  member_id: string
+  group_id: string
+  timestamp: Date
+  timestamp_timezone?: string | null
+  timestamp_offset_seconds?: number | null
+  confidence: number
+  device_id?: string | null
+  location?: string
+  notes?: string
+  is_manual: boolean
+  event_type?: "check_in" | "check_out"
+  created_by?: string
+  is_voided?: boolean
+  voided_at?: Date
+  voided_by?: string
+  void_reason?: string
+}
+
+export interface AttendanceSession {
+  id: string
+  is_manual_override?: boolean
+  person_id: string
+  member_id: string
+  group_id: string
+  applied_rule_id?: string
+  applied_schedule?: {
+    class_start_time: string
+    class_end_time?: string | null
+    attendance_mode: "attendance" | "work_hours" | "visits"
+    scan_behavior?: "automatic" | "entry_only" | "exit_only" | null
+    min_checkout_delay_minutes?: number | null
+  } | null
+  date: string
+  check_in_time?: Date
+  check_out_time?: Date
+  check_in_time_timezone?: string | null
+  check_in_time_offset_seconds?: number | null
+  check_out_time_timezone?: string | null
+  check_out_time_offset_seconds?: number | null
+  total_hours?: number
+  status: AttendanceStatus
+  is_late: boolean
+  late_minutes?: number
+  notes?: string
+  visit_number?: number
+}
+
+export interface AttendanceStats {
+  total_members: number
+  present_today: number
+  absent_today: number
+  late_today: number
+}
+
+export interface AttendanceReport {
+  group_id: string
+  date_range: {
+    start: Date
+    end: Date
+  }
+  members: {
+    person_id: string
+    name: string
+    total_days: number
+    present_days: number
+    absent_days: number
+    late_days: number
+    attendance_rate: number
+  }[]
+  summary: {
+    total_working_days: number
+    average_attendance_rate: number
+    most_punctual: string
+    most_absent: string
+  }
+}
+
+export interface AttendanceSettings {
+  attendance_timezone?: string | null
+  late_threshold_minutes: number
+  enable_location_tracking: boolean
+  enable_liveness_detection: boolean
+  cloud_force_liveness?: boolean
+  confidence_threshold?: number
+  attendance_cooldown_seconds: number
+  max_recognition_faces_per_frame: number
+  data_retention_days?: number
+}
+
+export interface AttendanceTimeHealth {
+  source: string
+  current_time_utc: Date | string
+  current_time_local: Date | string
+  time_zone_name: string
+  os_clock_drift_seconds: number
+  os_clock_warning?: string
+  online_verification_status: string
+  online_reference_url?: string
+  online_checked_at?: Date | string
+  online_reference_time?: Date | string
+  online_drift_seconds?: number
+  warning_message?: string
+  timezone_mismatch?: boolean
+  device_time_zone_name?: string | null
+  attendance_time_zone_name?: string | null
+  timezone_warning_message?: string | null
+}
+
+export interface AttendanceEvent {
+  id: string
+  person_id: string
+  group_id: string
+  timestamp: Date
+  confidence: number
+  location?: string
+  processed: boolean
+  event_type?: "check_in" | "check_out"
+  error?: string
+  time_health?: AttendanceTimeHealth
+}
+
+// Bulk Operations
+export interface BulkDetectResultItem {
+  image_id: string
+  success: boolean
+  faces: {
+    bbox: [number, number, number, number]
+    confidence: number
+    landmarks_5?: number[][]
+    quality_score: number
+    is_acceptable: boolean
+    suggestions?: string[]
+  }[]
+  total_faces?: number
+  error?: string
+}
+
+export interface BulkDetectResponse {
+  success: boolean
+  group_id: string
+  total_images: number
+  results: BulkDetectResultItem[]
+}
+
+export interface BulkEnrollResultItem {
+  index: number
+  person_id: string
+  member_name?: string
+  success: boolean
+  error?: string
+  quality_warning?: string
+}
+
+export interface BulkEnrollResponse {
+  success: boolean
+  group_id: string
+  success_count: number
+  failed_count: number
+  results: BulkEnrollResultItem[]
+}

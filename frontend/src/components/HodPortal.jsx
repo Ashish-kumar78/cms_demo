@@ -54,6 +54,7 @@ import {
 import CalendarWidget from './CalendarWidget.jsx';
 import HolidayListWidget from './HolidayListWidget.jsx';
 import TakeAttendanceModule from './Attendance/TakeAttendanceModule.jsx';
+import { SmartCctvHub } from './cctv/SmartCctvHub.tsx';
 import { AppLayout } from './Navigation';
 import '../DashboardHome.css';
 import './FacultyPortal.css';
@@ -312,6 +313,7 @@ export default function HodPortal({ account, onLogout }) {
   const isDemo = isDemoAccount(account);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [openAttendanceModel, setOpenAttendanceModel] = useState(false);
+  const [isSmartCctvHubOpen, setIsSmartCctvHubOpen] = useState(false);
   const [approvalQueue, setApprovalQueue] = useState(() => (isDemo ? initialApprovalQueue : []));
   const [students, setStudents] = useState(() => (isDemo ? getAllStudents() : []));
   const [faculty, setFaculty] = useState(() => (isDemo ? initialFaculty : []));
@@ -967,6 +969,7 @@ export default function HodPortal({ account, onLogout }) {
         { id: 'digital-evaluation', label: 'Digital Evaluation & Approval', icon: FileCheck },
         { id: 'subjects', label: 'Department Subjects', icon: BookOpen },
         { id: 'take-attendance', label: 'Take Attendance', icon: ClipboardCheck },
+        { id: 'cctv-model-hub', label: 'AI CCTV Attendance Model', icon: Camera },
         { id: 'timetable', label: 'Timetable Management', icon: Calendar },
       ]
     },
@@ -1216,6 +1219,20 @@ export default function HodPortal({ account, onLogout }) {
                   setActiveTab('dashboard');
                 }}
               />
+            </div>
+          )}
+
+          {/* AI CCTV MODEL HUB TAB (EXACT REPOSITORY SYSTEM) */}
+          {activeTab === 'cctv-model-hub' && (
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ background: '#0c0e14', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', minHeight: '680px' }}>
+                <SmartCctvHub
+                  isOpen={true}
+                  userRole="hod"
+                  initialTab="hod"
+                  onClose={() => setActiveTab('take-attendance')}
+                />
+              </div>
             </div>
           )}
 
@@ -2093,12 +2110,11 @@ export default function HodPortal({ account, onLogout }) {
                             cursor: 'pointer'
                           }}
                           onClick={() => {
-                            setOpenAttendanceModel(true);
-                            setActiveTab('take-attendance');
+                            setIsSmartCctvHubOpen(true);
                           }}
-                          title="Take attendance using Facenox AI Camera & Biometric Model"
+                          title="Open Facenox Smart CCTV Attendance & Biometric Audit Hub"
                         >
-                          <Camera size={12} /> 🤖 AI Model
+                          <Camera size={12} /> 🤖 AI CCTV Hub
                         </button>
                       </div>
                     </div>
@@ -4724,6 +4740,14 @@ export default function HodPortal({ account, onLogout }) {
           }}
         />
       )}
+
+      {/* EXACT FACENOX SMART CCTV ATTENDANCE MODEL HUB FROM REPO */}
+      <SmartCctvHub
+        isOpen={isSmartCctvHubOpen}
+        onClose={() => setIsSmartCctvHubOpen(false)}
+        userRole="hod"
+        initialTab="hod"
+      />
     </>
   );
 }
